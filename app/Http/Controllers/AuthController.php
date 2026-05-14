@@ -1,0 +1,238 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\Barangay;
+
+class AuthController extends Controller
+{
+
+    /*
+    |--------------------------------------------------------------------------
+    | SHOW LOGIN
+    |--------------------------------------------------------------------------
+    */
+
+    public function showLogin()
+    {
+        return view('auth.login');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SHOW REGISTER
+    |--------------------------------------------------------------------------
+    */
+
+    public function showRegister()
+    {
+
+        $barangays = \App\Models\Barangay::all();
+
+        return view(
+            'auth.register',
+            compact('barangays')
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | REGISTER RESIDENT
+    |--------------------------------------------------------------------------
+    */
+
+    public function register(Request $request)
+    {
+
+        $request->validate([
+
+            'name'      => 'required',
+            'username'  => 'required|unique:users',
+            'email'     => 'required|email|unique:users',
+            'password'  => 'required|min:6|confirmed',
+            'barangay'  => 'required',
+
+        ]);
+
+        User::create([
+
+            'name'      => $request->name,
+            'username'  => $request->username,
+            'email'     => $request->email,
+            'password'  => Hash::make($request->password),
+            'role'      => 'resident',
+            'status'    => 'pending',
+            'barangay'  => $request->barangay,
+
+        ]);
+
+        Auth::logout();
+
+        return redirect('/login')
+            ->with(
+                'success',
+                'Registration submitted successfully. Please wait for approval.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOGIN
+    |--------------------------------------------------------------------------
+    */
+
+    public function login(Request $request)
+    {
+        /*
+    |--------------------------------------------------------------------------
+    | FIND USER FIRST
+    |--------------------------------------------------------------------------
+    */
+
+        $user = User::where(
+            'username',
+            $request->username
+        )->first();
+
+        /*
+    |--------------------------------------------------------------------------
+    | USER NOT FOUND
+    |--------------------------------------------------------------------------
+    */
+
+        if (!$user) {
+
+            return back()->with(
+                'error',
+                'Invalid login credentials.'
+            );
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | ACCOUNT STILL PENDING
+    |--------------------------------------------------------------------------
+    */
+
+        if ($user->status == 'pending') {
+
+            return back()->with(
+                'error',
+                'Your account is still waiting for approval.'
+            );
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | ACCOUNT REJECTED
+    |--------------------------------------------------------------------------
+    */
+
+        if ($user->status == 'rejected') {
+
+            return back()->with(
+                'error',
+                'Your registration was rejected.'
+            );
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | SUPER ADMIN / WORKER LOGIN
+    |--------------------------------------------------------------------------
+    */
+
+        if (
+            $user->role == 'super_admin' ||
+            $user->role == 'barangay_worker'
+        ) {
+
+            $credentials = [
+
+                'username' => $request->username,
+                'password' => $request->password,
+                'status'   => 'active'
+
+            ];
+
+            if (Auth::guard('worker')->attempt($credentials)) {
+
+                $request->session()->regenerate();
+
+                $worker = Auth::guard('worker')->user();
+
+                // SUPER ADMIN
+
+                if ($worker->role == 'super_admin') {
+
+                    return redirect('/superadmin/dashboard');
+                }
+
+                // BARANGAY WORKER
+
+                if ($worker->role == 'barangay_worker') {
+
+                    return redirect('/barangay/dashboard');
+                }
+            }
+
+            return back()->with(
+                'error',
+                'Invalid admin credentials.'
+            );
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | RESIDENT LOGIN
+    |--------------------------------------------------------------------------
+    */
+
+        $credentials = [
+
+            'username' => $request->username,
+            'password' => $request->password,
+            'status'   => 'active'
+
+        ];
+
+        if (Auth::guard('resident')->attempt($credentials)) {
+
+            $request->session()->regenerate();
+
+            return redirect('/resident/dashboard');
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | WRONG PASSWORD
+    |--------------------------------------------------------------------------
+    */
+
+        return back()->with(
+            'error',
+            'Invalid login credentials.'
+        );
+    }
+    /*
+    |--------------------------------------------------------------------------
+    | LOGOUT
+    |--------------------------------------------------------------------------
+    */
+
+    public function logout(Request $request)
+    {
+
+        Auth::logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect('/login');
+    }
+}

@@ -1,0 +1,37 @@
+/* BOTTOM NAV */
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 430px;
+    height: 90px;
+    background: white;
+    border-top: 1px solid #ddd;
+
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+
+    z-index: 9999;
+}
+
+.nav-item {
+    flex: 1;
+    text-align: center;
+    color: #64748B;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.nav-item.active {
+    color: #2563EB;
+}
+
+.nav-icon {
+    display: block;
+    font-size: 28px;
+    margin-bottom: 5px;
+}

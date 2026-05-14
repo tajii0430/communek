@@ -1,0 +1,45 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #EEF2F7;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    justify-content: center;
+    overflow-x: hidden;
+    color: #0F172A;
+}
+
+.mobile-container {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100vh;
+    background: #F7F7F7;
+    position: relative;
+}
+
+.main-content {
+    padding: 20px;
+    padding-bottom: 130px;
+    min-height: 100vh;
+}
+
+a {
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+}
+
+body {
+    background: red !important;
+}

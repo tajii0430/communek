@@ -1,0 +1,54 @@
+/* CARDS */
+
+.dashboard-card {
+    background: white;
+    border-radius: 35px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, .05);
+}
+
+/* BUTTONS */
+
+.primary-btn {
+    width: 100%;
+    background: #2563EB;
+    color: white;
+    border: none;
+    border-radius: 22px;
+    padding: 18px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.secondary-btn {
+    width: 100%;
+    background: #E2E8F0;
+    color: #0F172A;
+    border: none;
+    border-radius: 22px;
+    padding: 18px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* INPUTS */
+
+.form-input {
+    width: 100%;
+    border: none;
+    background: #EDF1F5;
+    border-radius: 22px;
+    padding: 18px;
+    outline: none;
+    margin-bottom: 18px;
+    font-size: 16px;
+}
+
+/* TITLES */
+
+.section-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #0F172A;
+    margin-bottom: 20px;
+}
