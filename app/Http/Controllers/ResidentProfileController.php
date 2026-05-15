@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Cloudinary\Cloudinary;
 
 class ResidentProfileController extends Controller
 {
@@ -101,8 +102,22 @@ class ResidentProfileController extends Controller
 
         if ($request->hasFile('profile_photo')) {
 
-            $photoPath = $request->file('profile_photo')
-                ->store('profile_photos', 'public');
+            $cloudinary = new Cloudinary([
+                'cloud' => [
+                    'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                    'api_key'    => env('CLOUDINARY_API_KEY'),
+                    'api_secret' => env('CLOUDINARY_API_SECRET'),
+                ],
+            ]);
+
+            $uploadedFile = $cloudinary->uploadApi()->upload(
+                $request->file('profile_photo')->getRealPath(),
+                [
+                    'folder' => 'resident_photos'
+                ]
+            );
+
+            $photoPath = $uploadedFile['secure_url'];
         }
 
         /*

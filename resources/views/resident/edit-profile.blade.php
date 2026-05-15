@@ -61,7 +61,7 @@
 
             <img
                 id="profile-preview"
-                src="{{ $resident->profile_photo ? asset('storage/' . $resident->profile_photo) : 'https://via.placeholder.com/90' }}"
+                src="{{ $resident->profile_photo ? $resident->profile_photo : 'https://via.placeholder.com/90' }}"
                 alt="Profile Preview"
                 style="
             width:90px;

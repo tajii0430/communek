@@ -19,22 +19,16 @@
     @if($resident && $resident->profile_photo)
 
     <img
-        src="{{ asset('storage/' . $resident->profile_photo) }}?v={{ time() }}"
-        class="rounded-circle mb-3"
-        width="120"
-        height="120"
-        style="
-        object-fit: cover;
-        border-radius: 50%;
-    ">
+        src="{{ $resident->profile_photo }}?v={{ time() }}"
+        alt="Profile Photo"
+        class="profile-image">
 
     @else
 
     <img
-        src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('resident')->user()->name) }}"
-        class="rounded-circle mb-3"
-        width="120"
-        height="120">
+        src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('resident')->user()->name) }}&background=2563eb&color=fff&size=200"
+        alt="Default Avatar"
+        class="profile-image">
 
     @endif
 
@@ -55,59 +49,38 @@
     </div>
 
     <div class="view-box">
-
         <strong>Contact Number:</strong><br>
-
         {{ $resident->contact_number ?? 'N/A' }}
-
     </div>
 
     <div class="view-box">
-
         <strong>Age:</strong><br>
-
         {{ $resident->age ?? 'N/A' }}
-
     </div>
 
     <div class="view-box">
-
         <strong>Gender:</strong><br>
-
         {{ $resident->gender ?? 'N/A' }}
-
     </div>
 
     <div class="view-box">
-
         <strong>Birthdate:</strong><br>
-
         {{ $resident->birthdate ?? 'N/A' }}
-
     </div>
 
     <div class="view-box">
-
         <strong>Civil Status:</strong><br>
-
         {{ $resident->civil_status ?? 'N/A' }}
-
     </div>
 
     <div class="view-box">
-
         <strong>Sitio:</strong><br>
-
         {{ $resident->address ?? 'N/A' }}
-
     </div>
 
     <div class="view-box">
-
         <strong>Barangay:</strong><br>
-
         {{ $resident->barangay ?? 'N/A' }}
-
     </div>
 
     <a
@@ -134,15 +107,14 @@
         href="/resident/id/download"
         class="submit-btn"
         style="
-        display:block;
-        text-align:center;
-        text-decoration:none;
-    ">
+            display:block;
+            text-align:center;
+            text-decoration:none;
+        ">
 
         Download Resident ID PDF
 
     </a>
-
 
 </div>
 
@@ -155,9 +127,7 @@
         @csrf
 
         <button type="submit">
-
             Logout
-
         </button>
 
     </form>
@@ -170,6 +140,7 @@
         height: 120px;
         border-radius: 50%;
         object-fit: cover;
+        border: 4px solid #e2e8f0;
         margin-bottom: 15px;
     }
 
@@ -203,6 +174,7 @@
         border-radius: 22px;
         font-size: 18px;
         font-weight: 700;
+        cursor: pointer;
     }
 </style>
 
