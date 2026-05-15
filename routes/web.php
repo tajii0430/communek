@@ -91,31 +91,43 @@ Route::get('/dashboard', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(function ($request, $next) {
+/*
+|--------------------------------------------------------------------------
+| SUPER ADMIN
+|--------------------------------------------------------------------------
+*/
 
-    // HARDCODED SUPER ADMIN
-
-    if (session('super_admin')) {
-        return $next($request);
-    }
-
-    // DATABASE SUPER ADMIN
-
-    if (Auth::guard('worker')->check()) {
-
-        $user = Auth::guard('worker')->user();
-
-        if ($user->role == 'super_admin') {
-            return $next($request);
-        }
-    }
-
-    return redirect('/admin/login');
-})->group(function () {
+Route::group([], function () {
 
     Route::get(
         '/superadmin/dashboard',
-        [SuperAdminController::class, 'dashboard']
+        function () {
+
+            // HARDCODED SUPER ADMIN
+
+            if (session('super_admin')) {
+
+                return app(
+                    \App\Http\Controllers\SuperAdminController::class
+                )->dashboard();
+            }
+
+            // DATABASE SUPER ADMIN
+
+            if (Auth::guard('worker')->check()) {
+
+                $user = Auth::guard('worker')->user();
+
+                if ($user->role == 'super_admin') {
+
+                    return app(
+                        \App\Http\Controllers\SuperAdminController::class
+                    )->dashboard();
+                }
+            }
+
+            return redirect('/login');
+        }
     );
 
     Route::get(
