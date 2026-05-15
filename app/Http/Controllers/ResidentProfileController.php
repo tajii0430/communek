@@ -21,32 +21,43 @@ class ResidentProfileController extends Controller
 
     public function downloadResidentID()
     {
+
         $resident = Resident::where(
             'full_name',
             Auth::guard('resident')->user()->name
         )->first();
 
+        if (!$resident) {
+
+            return back()->with(
+                'error',
+                'Resident not found.'
+            );
+        }
+
         $qrCode = 'data:image/svg+xml;base64,' . base64_encode(
+
             QrCode::format('svg')
                 ->size(200)
                 ->generate(json_encode([
 
-                    'name' => $resident->full_name,
+                    'name'           => $resident->full_name,
                     'contact_number' => $resident->contact_number,
-                    'gender' => $resident->gender,
-                    'birthdate' => $resident->birthdate,
-                    'civil_status' => $resident->civil_status,
-                    'sitio' => $resident->address,
-                    'barangay' => $resident->barangay,
-                    'resident_id' => $resident->resident_id_number,
+                    'gender'         => $resident->gender,
+                    'birthdate'      => $resident->birthdate,
+                    'civil_status'   => $resident->civil_status,
+                    'sitio'          => $resident->address,
+                    'barangay'       => $resident->barangay,
+                    'resident_id'    => $resident->resident_id_number,
 
                 ]))
+
         );
 
         $pdf = Pdf::loadView('resident.id-template', [
 
             'resident' => $resident,
-            'qrCode' => $qrCode
+            'qrCode'   => $qrCode
 
         ])->setPaper('A4', 'landscape');
 
@@ -94,7 +105,7 @@ class ResidentProfileController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | AUTO COMPUTE AGE
+        | COMPUTE AGE
         |--------------------------------------------------------------------------
         */
 
@@ -106,16 +117,12 @@ class ResidentProfileController extends Controller
                 $request->birthdate
             );
 
-            $currentDate = Carbon::now();
-
-            $age = $birthdate->diffInYears(
-                $currentDate
-            );
+            $age = $birthdate->age;
         }
 
         /*
         |--------------------------------------------------------------------------
-        | PROFILE PHOTO UPLOAD
+        | PHOTO UPLOAD
         |--------------------------------------------------------------------------
         */
 
@@ -125,19 +132,13 @@ class ResidentProfileController extends Controller
 
             try {
 
-                $cloudinary = new Cloudinary([
+                $cloudinary = new Cloudinary(
 
-                    'cloud' => [
+                    env('CLOUDINARY_URL')
 
-                        'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-                        'api_key'    => env('CLOUDINARY_API_KEY'),
-                        'api_secret' => env('CLOUDINARY_API_SECRET'),
+                );
 
-                    ],
-
-                ]);
-
-                $uploadResult = $cloudinary
+                $uploadedFile = $cloudinary
                     ->uploadApi()
                     ->upload(
 
@@ -149,14 +150,12 @@ class ResidentProfileController extends Controller
 
                     );
 
-                $photoPath = $uploadResult['secure_url']
-                    ?? $uploadResult['url']
-                    ?? null;
+                $photoPath = $uploadedFile['secure_url'];
             } catch (\Exception $e) {
 
                 return back()->with(
                     'error',
-                    'Image upload failed: ' . $e->getMessage()
+                    'Cloudinary Upload Failed: ' . $e->getMessage()
                 );
             }
         }
@@ -179,19 +178,19 @@ class ResidentProfileController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | UPDATE RESIDENT PROFILE
+        | UPDATE PROFILE
         |--------------------------------------------------------------------------
         */
 
         $resident->update([
 
-            'contact_number'    => $request->contact_number,
-            'age'               => $age,
-            'gender'            => $request->gender,
-            'birthdate'         => $request->birthdate,
-            'civil_status'      => $request->civil_status,
-            'address'           => $request->address,
-            'profile_photo'     => $photoPath,
+            'contact_number'     => $request->contact_number,
+            'age'                => $age,
+            'gender'             => $request->gender,
+            'birthdate'          => $request->birthdate,
+            'civil_status'       => $request->civil_status,
+            'address'            => $request->address,
+            'profile_photo'      => $photoPath,
             'resident_id_number' => $residentID,
 
         ]);
