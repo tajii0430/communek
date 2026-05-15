@@ -13,6 +13,8 @@ use Cloudinary\Cloudinary;
 class ResidentController extends Controller
 {
 
+
+
     /*
     |--------------------------------------------------------------------------
     | DOWNLOAD RESIDENT ID
@@ -222,5 +224,18 @@ class ResidentController extends Controller
                 'success',
                 'Profile updated successfully.'
             );
+    }
+
+    public function complaints()
+    {
+        $complaints = \App\Models\Complaint::where(
+            'complainant_name',
+            auth()->user()->name
+        )->latest()->get();
+
+        return view(
+            'resident.complaints',
+            compact('complaints')
+        );
     }
 }
