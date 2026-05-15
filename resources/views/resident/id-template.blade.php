@@ -199,9 +199,14 @@
 
         <div class="gold-line"></div>
 
-        <img src="{{ public_path('images/batac-logo.png') }}" class="left-logo">
+        <img
+            src="{{ public_path('images/batac-logo.png') }}"
+            class="left-logo">
 
-        <img src="{{ public_path('images/bagong-pilipinas.png') }}" class="right-logo">
+        <img
+            src="{{ public_path('images/bagong-pilipinas.png') }}"
+            class="right-logo">
+
         <div class="header">
 
             <div style="font-size:18px;font-weight:bold;">
@@ -220,7 +225,9 @@
                 BARANGAY {{ strtoupper($resident->barangay) }}
             </h2>
 
-            <h1>RESIDENT ID</h1>
+            <h1>
+                RESIDENT ID
+            </h1>
 
             <p>
                 “Serbisyong Tapat, Barangay na Maunlad”
@@ -228,18 +235,27 @@
 
         </div>
 
+        <!-- PROFILE PHOTO -->
+
         <div class="photo-box">
 
             @if($resident->profile_photo)
 
-            <img src="{{ public_path('storage/' . $resident->profile_photo) }}">
+            <img
+                src="{{ $resident->profile_photo }}"
+                alt="Resident Photo">
 
             @else
 
-            <img src="{{ public_path('images/default-avatar.png') }}">
+            <img
+                src="{{ public_path('images/default-avatar.png') }}"
+                alt="Default Avatar">
+
             @endif
 
         </div>
+
+        <!-- RESIDENT ID -->
 
         <div class="resident-id">
 
@@ -247,38 +263,79 @@
 
         </div>
 
+        <!-- RESIDENT INFORMATION -->
+
         <div class="info-section">
 
             <div class="info">
-                <div class="label">Name:</div>
-                <div class="value">{{ $resident->full_name }}</div>
+
+                <div class="label">
+                    Name:
+                </div>
+
+                <div class="value">
+                    {{ $resident->full_name }}
+                </div>
+
             </div>
 
             <div class="info">
-                <div class="label">Contact Number:</div>
-                <div class="value">{{ $resident->contact_number }}</div>
+
+                <div class="label">
+                    Contact Number:
+                </div>
+
+                <div class="value">
+                    {{ $resident->contact_number }}
+                </div>
+
             </div>
 
             <div class="info">
-                <div class="label">Gender:</div>
-                <div class="value">{{ $resident->gender }}</div>
+
+                <div class="label">
+                    Gender:
+                </div>
+
+                <div class="value">
+                    {{ $resident->gender }}
+                </div>
+
             </div>
 
             <div class="info">
-                <div class="label">Sitio:</div>
-                <div class="value">{{ $resident->address }}</div>
+
+                <div class="label">
+                    Sitio:
+                </div>
+
+                <div class="value">
+                    {{ $resident->address }}
+                </div>
+
             </div>
 
             <div class="info">
-                <div class="label">Barangay:</div>
-                <div class="value">{{ $resident->barangay }}</div>
+
+                <div class="label">
+                    Barangay:
+                </div>
+
+                <div class="value">
+                    {{ $resident->barangay }}
+                </div>
+
             </div>
 
         </div>
 
+        <!-- QR CODE -->
+
         <div class="qr-box">
 
-            <img src="{{ $qrCode }}">
+            <img
+                src="{{ $qrCode }}"
+                alt="QR Code">
 
             <div class="scan-text">
                 SCAN TO VIEW PROFILE
