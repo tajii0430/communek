@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.barangay')
 
 @php
 use Illuminate\Support\Str;
