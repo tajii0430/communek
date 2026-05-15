@@ -143,12 +143,13 @@ class ResidentProfileController extends Controller
                         ]
                     );
 
-                dd($uploadedFile);
-
-                $photoPath = $uploadedFile['secure_url'];
+                $photoPath = $uploadedFile['storage']['secure_url'];
             } catch (\Exception $e) {
 
-                dd($e->getMessage());
+                return back()->with(
+                    'error',
+                    'Cloudinary Upload Failed: ' . $e->getMessage()
+                );
             }
         }
         /*
