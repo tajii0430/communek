@@ -11,13 +11,30 @@ class AdminAuthController extends Controller
 
     public function loginPage()
     {
-        return view('login');
+        return view('admin.login');
     }
 
     // LOGIN
 
     public function login(Request $request)
     {
+        // HARDCODED SUPER ADMIN LOGIN
+
+        if (
+            $request->username === 'superadmin' &&
+            $request->password === 'admin123'
+        ) {
+
+            session([
+                'super_admin' => true,
+                'admin_name' => 'Super Admin'
+            ]);
+
+            return redirect('/superadmin/dashboard');
+        }
+
+        // DATABASE LOGIN
+
         $credentials = [
 
             'username' => $request->username,
