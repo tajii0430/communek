@@ -238,4 +238,60 @@ class ResidentController extends Controller
             compact('complaints')
         );
     }
+
+    public function dashboard()
+    {
+        $resident = auth('resident')->user();
+
+        /*
+    |--------------------------------------------------------------------------
+    | ANNOUNCEMENTS
+    |--------------------------------------------------------------------------
+    */
+
+        $announcements = \App\Models\Announcement::latest()
+            ->take(5)
+            ->get();
+
+        /*
+    |--------------------------------------------------------------------------
+    | DOCUMENT REQUEST COUNT
+    |--------------------------------------------------------------------------
+    */
+
+        $documentRequests =
+            \App\Models\DocumentRequest::where(
+                'user_id',
+                $resident->id
+            )->count();
+
+        /*
+    |--------------------------------------------------------------------------
+    | ACTIVE COMPLAINTS COUNT
+    |--------------------------------------------------------------------------
+    */
+
+        $activeComplaints =
+            \App\Models\Complaint::where(
+                'complainant_name',
+                auth('resident')->user()->name
+            )
+            ->where('status', '!=', 'resolved')
+            ->count();
+
+        /*
+    |--------------------------------------------------------------------------
+    | RETURN VIEW
+    |--------------------------------------------------------------------------
+    */
+
+        return view(
+            'resident.dashboard',
+            compact(
+                'announcements',
+                'documentRequests',
+                'activeComplaints'
+            )
+        );
+    }
 }
