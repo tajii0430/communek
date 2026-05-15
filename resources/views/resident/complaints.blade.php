@@ -9,28 +9,34 @@
 
 <style>
     :root {
-        --primary: #0f172a;
-        --secondary: #1e293b;
+        --primary: #071129;
+        --secondary: #102348;
         --accent: #2563eb;
+        --accent-light: #eff6ff;
         --bg: #f1f5f9;
         --card: #ffffff;
         --text: #0f172a;
         --muted: #64748b;
         --border: #e2e8f0;
+        --shadow:
+            0 10px 35px rgba(15, 23, 42, 0.06);
     }
 
     body {
-        background: var(--bg);
+        background:
+            linear-gradient(to bottom,
+                #eef2ff,
+                #f8fafc);
     }
 
     .page-header {
         background:
             linear-gradient(135deg,
-                #071129 0%,
-                #102348 55%,
-                #1b2940 100%);
-        padding: 38px 26px 90px;
-        border-radius: 0 0 38px 38px;
+                #020817 0%,
+                #071129 45%,
+                #1e3a8a 100%);
+        padding: 42px 26px 110px;
+        border-radius: 0 0 42px 42px;
         color: white;
         margin: -20px -20px 0;
         position: relative;
@@ -40,59 +46,77 @@
     .page-header::before {
         content: '';
         position: absolute;
-        width: 240px;
-        height: 240px;
-        background: rgba(255, 255, 255, .05);
+        width: 320px;
+        height: 320px;
+        background:
+            rgba(255, 255, 255, .05);
         border-radius: 50%;
-        top: -100px;
-        right: -70px;
+        top: -120px;
+        right: -120px;
+    }
+
+    .page-header::after {
+        content: '';
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        background:
+            rgba(255, 255, 255, .04);
+        border-radius: 50%;
+        bottom: -60px;
+        left: -60px;
     }
 
     .header-subtitle {
         font-size: 14px;
-        font-weight: 500;
-        opacity: .8;
-        margin-bottom: 8px;
+        font-weight: 600;
+        opacity: .75;
+        margin-bottom: 10px;
+        letter-spacing: .5px;
     }
 
     .header-title {
         font-size: 48px;
-        font-weight: 800;
+        font-weight: 900;
         line-height: 1;
         margin: 0;
     }
 
     .content-wrapper {
-        margin-top: -55px;
+        margin-top: -70px;
+        position: relative;
+        z-index: 10;
         padding-bottom: 120px;
     }
 
     .modern-card {
-        background: white;
-        border-radius: 28px;
-        padding: 24px;
-        margin-bottom: 22px;
+        background: var(--card);
+        border-radius: 32px;
+        padding: 26px;
+        margin-bottom: 24px;
         border: 1px solid var(--border);
-        box-shadow: 0 10px 30px rgba(15, 23, 42, .05);
+        box-shadow: var(--shadow);
     }
 
     .section-title {
-        font-size: 24px;
-        font-weight: 800;
+        font-size: 26px;
+        font-weight: 900;
         color: var(--text);
-        margin-bottom: 22px;
+        margin-bottom: 24px;
     }
 
     .input-group-modern {
-        margin-bottom: 18px;
+        margin-bottom: 22px;
     }
 
     .input-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
         font-size: 14px;
-        font-weight: 700;
+        font-weight: 800;
         color: var(--text);
         margin-bottom: 10px;
-        display: block;
     }
 
     .modern-input,
@@ -100,23 +124,24 @@
         width: 100%;
         border: 1px solid var(--border);
         background: #f8fafc;
-        border-radius: 18px;
+        border-radius: 20px;
         padding: 16px 18px;
         font-size: 15px;
         outline: none;
-        transition: .2s;
+        transition: .25s;
         color: var(--text);
     }
 
     .modern-input:focus,
     .modern-textarea:focus {
-        border-color: #2563eb;
+        border-color: var(--accent);
         background: white;
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, .08);
+        box-shadow:
+            0 0 0 5px rgba(37, 99, 235, .08);
     }
 
     .modern-textarea {
-        min-height: 130px;
+        min-height: 140px;
         resize: none;
     }
 
@@ -124,8 +149,8 @@
         width: 100%;
         background: #f8fafc;
         border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 16px 18px;
+        border-radius: 20px;
+        padding: 17px 18px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -134,27 +159,29 @@
     }
 
     .dropdown-trigger:hover {
-        border-color: #cbd5e1;
+        border-color: var(--accent);
+        background: white;
     }
 
     .dropdown-text {
         color: var(--text);
         font-size: 15px;
-        font-weight: 600;
+        font-weight: 700;
     }
 
     .dropdown-arrow {
-        font-size: 14px;
         color: var(--muted);
+        font-size: 14px;
     }
 
     .dropdown-menu-modern {
         display: none;
-        margin-top: 12px;
+        margin-top: 14px;
         background: white;
-        border-radius: 20px;
+        border-radius: 24px;
         border: 1px solid var(--border);
-        padding: 16px;
+        padding: 18px;
+        box-shadow: var(--shadow);
     }
 
     .dropdown-menu-modern.show {
@@ -165,44 +192,48 @@
         width: 100%;
         border: 1px solid var(--border);
         background: #f8fafc;
-        border-radius: 14px;
+        border-radius: 16px;
         padding: 14px;
         font-size: 14px;
-        margin-bottom: 15px;
+        margin-bottom: 16px;
         outline: none;
     }
 
     .category-list {
-        max-height: 220px;
+        max-height: 240px;
         overflow-y: auto;
+        padding-right: 4px;
     }
 
     .category-item {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 10px 4px;
+        padding: 12px 4px;
         font-size: 14px;
+        font-weight: 600;
         color: var(--text);
     }
 
     .category-item input {
         width: 18px;
         height: 18px;
-        accent-color: #2563eb;
+        accent-color: var(--accent);
     }
 
     .upload-box {
         border: 2px dashed #cbd5e1;
-        border-radius: 20px;
-        padding: 22px;
+        border-radius: 24px;
+        padding: 26px;
         text-align: center;
-        background: #f8fafc;
-        transition: .2s;
+        background: linear-gradient(to bottom,
+                #f8fafc,
+                #f1f5f9);
+        transition: .25s;
     }
 
     .upload-box:hover {
-        border-color: #2563eb;
+        border-color: var(--accent);
         background: #f8fbff;
     }
 
@@ -210,48 +241,61 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 12px 22px;
-        background: var(--primary);
+        background:
+            linear-gradient(135deg,
+                #071129,
+                #1e3a8a);
         color: white;
-        border-radius: 14px;
+        padding: 14px 24px;
+        border-radius: 16px;
         font-size: 14px;
-        font-weight: 700;
+        font-weight: 800;
         cursor: pointer;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
+        transition: .2s;
+    }
+
+    .upload-btn:hover {
+        transform: translateY(-2px);
     }
 
     .file-name {
         font-size: 13px;
         color: var(--muted);
+        font-weight: 600;
     }
 
     .map-wrapper {
         overflow: hidden;
-        border-radius: 22px;
+        border-radius: 24px;
         border: 1px solid var(--border);
         margin-top: 10px;
     }
 
     #map {
-        height: 280px;
+        height: 320px;
         width: 100%;
     }
 
     .submit-btn {
         width: 100%;
         border: none;
-        background: linear-gradient(135deg, #071129, #1e293b);
+        background:
+            linear-gradient(135deg,
+                #020817,
+                #1d4ed8);
         color: white;
-        border-radius: 18px;
-        padding: 17px;
+        border-radius: 20px;
+        padding: 18px;
         font-size: 16px;
-        font-weight: 700;
-        margin-top: 12px;
-        transition: .2s;
+        font-weight: 800;
+        transition: .25s;
+        box-shadow:
+            0 10px 25px rgba(37, 99, 235, .25);
     }
 
     .submit-btn:hover {
-        transform: translateY(-2px);
+        transform: translateY(-3px);
     }
 
     .complaint-link {
@@ -259,30 +303,34 @@
     }
 
     .complaint-card {
-        background: #f8fafc;
+        background:
+            linear-gradient(to bottom,
+                #ffffff,
+                #f8fafc);
         border: 1px solid var(--border);
-        border-radius: 22px;
-        padding: 18px;
-        margin-bottom: 16px;
-        transition: .2s;
+        border-radius: 26px;
+        padding: 20px;
+        margin-bottom: 18px;
+        transition: .25s;
     }
 
     .complaint-card:hover {
-        transform: translateY(-2px);
-        border-color: #cbd5e1;
+        transform: translateY(-3px);
+        box-shadow:
+            0 12px 30px rgba(15, 23, 42, .06);
     }
 
     .complaint-top {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        gap: 12px;
+        gap: 14px;
         margin-bottom: 12px;
     }
 
     .complaint-title {
         font-size: 16px;
-        font-weight: 700;
+        font-weight: 800;
         color: var(--text);
         line-height: 1.5;
     }
@@ -295,10 +343,10 @@
     }
 
     .status-badge {
-        padding: 8px 14px;
+        padding: 9px 15px;
         border-radius: 999px;
-        font-size: 12px;
-        font-weight: 700;
+        font-size: 11px;
+        font-weight: 800;
         text-transform: uppercase;
     }
 
@@ -321,13 +369,14 @@
         text-align: center;
         color: var(--muted);
         font-size: 14px;
-        padding: 20px;
+        padding: 25px;
+        font-weight: 600;
     }
 
     @media(max-width:768px) {
 
         .page-header {
-            padding: 34px 22px 85px;
+            padding: 34px 22px 90px;
         }
 
         .header-title {
@@ -335,11 +384,16 @@
         }
 
         .modern-card {
-            padding: 20px;
+            padding: 22px;
+            border-radius: 28px;
         }
 
         .section-title {
             font-size: 22px;
+        }
+
+        #map {
+            height: 260px;
         }
 
     }
@@ -510,7 +564,7 @@
                         for="complaintImage"
                         class="upload-btn">
 
-                        Choose File
+                        Upload Evidence
 
                     </label>
 
@@ -605,7 +659,7 @@
 
                 <div class="complaint-description">
 
-                    {{ $complaint->description }}
+                    {{ Str::limit($complaint->description, 140) }}
 
                 </div>
 
