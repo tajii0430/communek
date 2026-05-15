@@ -9,11 +9,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 
 COPY . .
-
-RUN composer install --no-dev --optimize-autoloader \
-    && php artisan storage:link \
-    && php artisan config:clear \
-    && php artisan cache:clear
+RUN composer install --no-dev --optimize-autoloader
 
 EXPOSE 10000
 
