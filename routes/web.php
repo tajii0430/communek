@@ -23,10 +23,8 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 */
 
 Route::get('/', function () {
-
-    return view('welcome');
+    return redirect('/login');
 });
-
 /*
 |--------------------------------------------------------------------------
 | ANNOUNCEMENTS
