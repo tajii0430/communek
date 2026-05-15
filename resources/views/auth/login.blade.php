@@ -1,197 +1,353 @@
-<?php
+  <style>
+      body {
+          background: #eef2f7;
+          font-family: Arial, Helvetica, sans-serif;
+      }
 
-namespace App\Http\Controllers;
+      body::before {
+          content: "";
+          position: fixed;
+          top: -20px;
+          left: -20px;
+          width: calc(100% + 40px);
+          height: calc(100% + 40px);
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Models\Barangay;
+          background: linear-gradient(rgba(3, 13, 50, 0.81), rgba(0, 0, 0, 0.86)),
+          url('{{ asset("images/batac.jpg") }}');
 
-class AuthController extends Controller
-{
-    /*
-    |--------------------------------------------------------------------------
-    | SHOW LOGIN
-    |--------------------------------------------------------------------------
-    */
+          background-position: center;
+          background-size: cover;
+          background-repeat: no-repeat;
 
-    public function showLogin()
-    {
-        return view('auth.login');
-    }
+          filter: blur(10px);
+          -webkit-filter: blur(10px);
 
-    /*
-    |--------------------------------------------------------------------------
-    | SHOW REGISTER
-    |--------------------------------------------------------------------------
-    */
+          z-index: -1;
+      }
 
-    public function showRegister()
-    {
-        $barangays = Barangay::all();
+      .login-wrapper {
+          min-height: 100vh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 30px 20px;
+      }
 
-        return view(
-            'auth.register',
-            compact('barangays')
-        );
-    }
+      .login-card {
+          width: 100%;
+          max-width: 430px;
+          background: white;
+          border-radius: 40px;
+          overflow: hidden;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+      }
 
-    /*
-    |--------------------------------------------------------------------------
-    | REGISTER RESIDENT
-    |--------------------------------------------------------------------------
-    */
+      /* HEADER */
 
-    public function register(Request $request)
-    {
-        $request->validate([
+      .login-header {
+          background: linear-gradient(135deg, #071129, #1b2940);
+          padding: 45px 30px;
+          border-radius: 0 0 45px 45px;
+          color: white;
+      }
 
-            'name'      => 'required',
-            'username'  => 'required|unique:users',
-            'email'     => 'required|email|unique:users',
-            'password'  => 'required|min:6|confirmed',
-            'barangay'  => 'required',
+      .login-header h1 {
+          font-size: 50px;
+          font-weight: 800;
+          line-height: 1;
+          margin: 0;
+      }
 
-        ]);
+      .brand-subtitle {
+          font-size: 14px;
+          opacity: .85;
+          margin-top: 8px;
+      }
 
-        User::create([
+      .brand-badge {
+          display: inline-block;
+          margin-top: 18px;
+          background: rgba(255, 255, 255, .15);
+          padding: 10px 20px;
+          border-radius: 20px;
+          font-size: 15px;
+          font-weight: 700;
+      }
 
-            'name'      => $request->name,
-            'username'  => $request->username,
-            'email'     => $request->email,
-            'password'  => Hash::make($request->password),
-            'role'      => 'resident',
-            'status'    => 'active',
-            'barangay'  => $request->barangay,
+      /* FORM */
 
-        ]);
+      .login-body {
+          padding: 30px;
+      }
 
-        return redirect('/login')
-            ->with(
-                'success',
-                'Account created successfully.'
-            );
-    }
+      .form-group {
+          margin-bottom: 20px;
+      }
 
-    /*
-    |--------------------------------------------------------------------------
-    | LOGIN
-    |--------------------------------------------------------------------------
-    */
+      .form-label {
+          display: block;
+          font-size: 17px;
+          font-weight: 700;
+          color: #0f172a;
+          margin-bottom: 10px;
+      }
 
-    public function login(Request $request)
-    {
-        // =========================================
-        // HARDCODED SUPER ADMIN
-        // =========================================
+      .form-input {
+          width: 100%;
+          border: none;
+          background: #eef2f7;
+          border-radius: 22px;
+          padding: 18px;
+          font-size: 16px;
+          outline: none;
+      }
 
-        if (
-            $request->username === 'superadmin' &&
-            $request->password === 'admin123'
-        ) {
+      .form-input:focus {
+          border: 2px solid #2563eb;
+          background: white;
+      }
 
-            session([
-                'super_admin' => true,
-                'admin_name' => 'Super Admin'
-            ]);
+      .error-text {
+          color: #dc2626;
+          font-size: 14px;
+          margin-top: 8px;
+      }
 
-            return redirect('/superadmin/dashboard');
-        }
+      /* BUTTON */
 
-        // =========================================
-        // WORKER LOGIN
-        // =========================================
+      .login-btn {
+          width: 100%;
+          border: none;
+          background: #2563eb;
+          color: white;
+          padding: 18px;
+          border-radius: 22px;
+          font-size: 20px;
+          font-weight: 700;
+          margin-top: 15px;
+          transition: .3s;
+          cursor: pointer;
+      }
 
-        $workerCredentials = [
+      .login-btn:hover {
+          background: #1d4ed8;
+      }
 
-            'username' => $request->username,
-            'password' => $request->password
+      /* REMEMBER */
 
-        ];
+      .remember-wrapper {
+          display: flex;
+          align-items: center;
+          margin-top: 10px;
+      }
 
-        if (
-            Auth::guard('worker')->attempt(
-                $workerCredentials
-            )
-        ) {
+      .remember-wrapper input {
+          width: 18px;
+          height: 18px;
+          accent-color: #2563eb;
+      }
 
-            $request->session()->regenerate();
+      .remember-wrapper span {
+          margin-left: 10px;
+          color: #475569;
+          font-size: 15px;
+      }
 
-            $user = Auth::guard('worker')->user();
+      /* FOOTER */
 
-            // SUPER ADMIN
+      .register-link {
+          text-align: center;
+          margin-top: 25px;
+          font-size: 15px;
+          color: #64748b;
+      }
 
-            if ($user->role == 'super_admin') {
+      .register-link a {
+          color: #2563eb;
+          font-weight: 700;
+          text-decoration: none;
+      }
 
-                return redirect('/superadmin/dashboard');
-            }
+      .success-message {
+          background: #dcfce7;
+          color: #166534;
+          padding: 14px 18px;
+          border-radius: 16px;
+          margin-bottom: 20px;
+          font-weight: 600;
+          border: 1px solid #86efac;
+      }
 
-            // BARANGAY WORKER
+      @media(max-width:500px) {
 
-            if ($user->role == 'barangay_worker') {
+          .login-header h1 {
+              font-size: 42px;
+          }
 
-                return redirect('/barangay/dashboard');
-            }
-        }
+      }
+  </style>
 
-        // =========================================
-        // RESIDENT LOGIN
-        // =========================================
+  <div class="login-wrapper">
 
-        $residentCredentials = [
+      <div class="login-card">
 
-            'username' => $request->username,
-            'password' => $request->password
+          <!-- HEADER -->
 
-        ];
+          <div class="login-header">
 
-        if (
-            Auth::guard('resident')->attempt(
-                $residentCredentials
-            )
-        ) {
+              <div style="
+                    display:flex;
+                    justify-content:left;
+                    align-items:center;
+                    gap:15px;
+                    margin-bottom:25px;
+                ">
 
-            $request->session()->regenerate();
+                  <!-- CITY OF BATAC LOGO -->
 
-            return redirect('/resident/dashboard');
-        }
+                  <img src="{{ asset('images/batac-logo.png') }}"
+                      alt="City of Batac Logo"
+                      style="
+                            width:70px;
+                            height:70px;
+                            object-fit:contain;
+                        ">
 
-        // =========================================
-        // FAILED LOGIN
-        // =========================================
+                  <!-- COMMUNEK LOGO -->
 
-        return back()->withErrors([
+                  <img src="{{ asset('images/logo-white.jpg') }}"
+                      alt="CommuNek Logo"
+                      style="
+                            width:75px;
+                            height:75px;
+                            object-fit:contain;
+                        ">
 
-            'username' => 'Invalid username or password.'
+              </div>
 
-        ]);
-    }
+              <h1>
+                  CommuNek
+              </h1>
 
-    /*
-    |--------------------------------------------------------------------------
-    | LOGOUT
-    |--------------------------------------------------------------------------
-    */
+              <div class="brand-subtitle">
+                  City of Batac Smart Barangay System
+              </div>
 
-    public function logout(Request $request)
-    {
-        // SUPER ADMIN SESSION
+              <div class="brand-badge">
+                  Resident Login
+              </div>
 
-        session()->forget('super_admin');
+          </div>
 
-        // WORKER
+          <!-- BODY -->
 
-        Auth::guard('worker')->logout();
+          <div class="login-body">
 
-        // RESIDENT
+              @if(session('success'))
 
-        Auth::guard('resident')->logout();
+              <div class="success-message">
+                  {{ session('success') }}
+              </div>
 
-        $request->session()->invalidate();
+              @endif
 
-        $request->session()->regenerateToken();
+              <form method="POST" action="{{ route('login') }}">
 
-        return redirect('/login');
-    }
-}
+                  @csrf
+
+                  <!-- USERNAME -->
+
+                  <div class="form-group">
+
+                      <label class="form-label">
+                          Username
+                      </label>
+
+                      <input
+                          type="text"
+                          name="username"
+                          value="{{ old('username') }}"
+                          class="form-input"
+                          placeholder="Enter username"
+                          required
+                          autofocus>
+
+                      @error('username')
+
+                      <div class="error-text">
+                          {{ $message }}
+                      </div>
+
+                      @enderror
+
+                  </div>
+
+                  <!-- PASSWORD -->
+
+                  <div class="form-group">
+
+                      <label class="form-label">
+                          Password
+                      </label>
+
+                      <input
+                          type="password"
+                          name="password"
+                          class="form-input"
+                          placeholder="Enter password"
+                          required>
+
+                      @error('password')
+
+                      <div class="error-text">
+                          {{ $message }}
+                      </div>
+
+                      @enderror
+
+                  </div>
+
+                  <!-- REMEMBER ME -->
+
+                  <div class="remember-wrapper">
+
+                      <input
+                          id="remember_me"
+                          type="checkbox"
+                          name="remember">
+
+                      <span>
+                          Remember me
+                      </span>
+
+                  </div>
+
+                  <!-- LOGIN BUTTON -->
+
+                  <button type="submit" class="login-btn">
+
+                      LOG IN
+
+                  </button>
+
+                  <!-- REGISTER LINK -->
+
+                  <div class="register-link">
+
+                      Don't have an account?
+
+                      <a href="{{ route('register') }}">
+
+                          Create Account
+
+                      </a>
+
+                  </div>
+
+              </form>
+
+          </div>
+
+      </div>
+
+  </div>
