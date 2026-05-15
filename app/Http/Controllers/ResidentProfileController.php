@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Resident;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -78,19 +77,41 @@ class ResidentProfileController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | VALIDATION
+        |--------------------------------------------------------------------------
+        */
+
+        $request->validate([
+
+            'contact_number' => 'nullable|string|max:20',
+            'gender'         => 'nullable|string|max:20',
+            'birthdate'      => 'nullable|date',
+            'civil_status'   => 'nullable|string|max:50',
+            'address'        => 'nullable|string|max:255',
+            'profile_photo'  => 'nullable|image|mimes:jpg,jpeg,png|max:4096',
+
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
         | AUTO COMPUTE AGE
         |--------------------------------------------------------------------------
         */
 
-        $birthdate = Carbon::parse(
-            $request->birthdate
-        );
+        $age = null;
 
-        $currentDate = Carbon::now();
+        if ($request->birthdate) {
 
-        $age = $birthdate->diffInYears(
-            $currentDate
-        );
+            $birthdate = Carbon::parse(
+                $request->birthdate
+            );
+
+            $currentDate = Carbon::now();
+
+            $age = $birthdate->diffInYears(
+                $currentDate
+            );
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -102,22 +123,42 @@ class ResidentProfileController extends Controller
 
         if ($request->hasFile('profile_photo')) {
 
-            $cloudinary = new Cloudinary([
-                'cloud' => [
-                    'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-                    'api_key'    => env('CLOUDINARY_API_KEY'),
-                    'api_secret' => env('CLOUDINARY_API_SECRET'),
-                ],
-            ]);
+            try {
 
-            $uploadedFile = $cloudinary->uploadApi()->upload(
-                $request->file('profile_photo')->getRealPath(),
-                [
-                    'folder' => 'resident_photos'
-                ]
-            );
+                $cloudinary = new Cloudinary([
 
-            $photoPath = $uploadedFile['secure_url'] ?? $uploadedFile['url'];
+                    'cloud' => [
+
+                        'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                        'api_key'    => env('CLOUDINARY_API_KEY'),
+                        'api_secret' => env('CLOUDINARY_API_SECRET'),
+
+                    ],
+
+                ]);
+
+                $uploadResult = $cloudinary
+                    ->uploadApi()
+                    ->upload(
+
+                        $request->file('profile_photo')->getRealPath(),
+
+                        [
+                            'folder' => 'resident_photos'
+                        ]
+
+                    );
+
+                $photoPath = $uploadResult['secure_url']
+                    ?? $uploadResult['url']
+                    ?? null;
+            } catch (\Exception $e) {
+
+                return back()->with(
+                    'error',
+                    'Image upload failed: ' . $e->getMessage()
+                );
+            }
         }
 
         /*
@@ -144,20 +185,13 @@ class ResidentProfileController extends Controller
 
         $resident->update([
 
-            'contact_number' => $request->contact_number,
-
-            'age' => $age,
-
-            'gender' => $request->gender,
-
-            'birthdate' => $request->birthdate,
-
-            'civil_status' => $request->civil_status,
-
-            'address' => $request->address,
-
-            'profile_photo' => $photoPath,
-
+            'contact_number'    => $request->contact_number,
+            'age'               => $age,
+            'gender'            => $request->gender,
+            'birthdate'         => $request->birthdate,
+            'civil_status'      => $request->civil_status,
+            'address'           => $request->address,
+            'profile_photo'     => $photoPath,
             'resident_id_number' => $residentID,
 
         ]);
