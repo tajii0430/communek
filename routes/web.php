@@ -100,18 +100,23 @@ Route::get('/dashboard', function () {
     return redirect('/');
 });
 
-/*
-|--------------------------------------------------------------------------
-| SUPER ADMIN
-|--------------------------------------------------------------------------
-*/
 
-Route::middleware(['auth:worker'])->group(function () {
+// HARDCODED SUPER ADMIN DASHBOARD
 
-    Route::get(
-        '/superadmin/dashboard',
-        [SuperAdminController::class, 'dashboard']
-    );
+Route::get('/superadmin/dashboard', function () {
+
+    if (!session('super_admin')) {
+        return redirect('/admin/login');
+    }
+
+    return app(
+        \App\Http\Controllers\SuperAdminController::class
+    )->dashboard();
+});
+
+// HARDCODED SUPER ADMIN ROUTES
+
+Route::middleware([])->group(function () {
 
     Route::get(
         '/superadmin/barangays',
@@ -144,11 +149,7 @@ Route::middleware(['auth:worker'])->group(function () {
     );
 });
 
-/*
-|--------------------------------------------------------------------------
-| BARANGAY WORKER
-|--------------------------------------------------------------------------
-*/
+
 
 Route::middleware(['auth:worker'])->group(function () {
 
