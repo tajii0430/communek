@@ -133,21 +133,16 @@ class ResidentProfileController extends Controller
             try {
 
                 $cloudinary = new Cloudinary(
-
                     env('CLOUDINARY_URL')
-
                 );
 
                 $uploadedFile = $cloudinary
                     ->uploadApi()
                     ->upload(
-
                         $request->file('profile_photo')->getRealPath(),
-
                         [
                             'folder' => 'resident_photos'
                         ]
-
                     );
 
                 $photoPath = $uploadedFile['secure_url'];
