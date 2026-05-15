@@ -6,11 +6,7 @@ use App\Models\Complaint;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Resident;
-use Illuminate\Support\Facades\Mail;
 use App\Models\Announcement;
-
-use App\Mail\ResidentApprovedMail;
-use App\Mail\ResidentRejectedMail;
 
 class ResidentController extends Controller
 {
@@ -382,17 +378,6 @@ class ResidentController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | SEND EMAIL
-        |--------------------------------------------------------------------------
-        */
-
-        Mail::to($user->email)
-            ->send(
-                new ResidentApprovedMail($user)
-            );
-
-        /*
-        |--------------------------------------------------------------------------
         | CREATE RESIDENT RECORD
         |--------------------------------------------------------------------------
         */
@@ -452,17 +437,6 @@ class ResidentController extends Controller
                     'Resident not found.'
                 );
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | SEND EMAIL
-        |--------------------------------------------------------------------------
-        */
-
-        Mail::to($user->email)
-            ->send(
-                new ResidentRejectedMail($user)
-            );
 
         /*
         |--------------------------------------------------------------------------
