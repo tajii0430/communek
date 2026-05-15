@@ -47,21 +47,6 @@ Route::post(
 |--------------------------------------------------------------------------
 */
 
-Route::get(
-    '/admin/login',
-    [AdminAuthController::class, 'loginPage']
-);
-
-Route::post(
-    '/admin/login',
-    [AdminAuthController::class, 'login']
-);
-
-Route::post(
-    '/admin/logout',
-    [AdminAuthController::class, 'logout']
-);
-
 /*
 |--------------------------------------------------------------------------
 | DASHBOARD REDIRECT

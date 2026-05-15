@@ -33,7 +33,7 @@
 
                         @endif
 
-                        <form method="POST" action="/admin/login">
+                        <form method="POST" action="/login">
 
                             @csrf
 
