@@ -122,6 +122,14 @@ class ResidentProfileController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | KEEP OLD PHOTO
+        |--------------------------------------------------------------------------
+        */
+
+        $photoPath = $resident->profile_photo;
+
+        /*
+        |--------------------------------------------------------------------------
         | PHOTO UPLOAD
         |--------------------------------------------------------------------------
         */
@@ -143,7 +151,13 @@ class ResidentProfileController extends Controller
                         ]
                     );
 
-                $photoPath = $uploadedFile['storage']['secure_url'];
+                /*
+                |--------------------------------------------------------------------------
+                | SAVE CLOUDINARY URL
+                |--------------------------------------------------------------------------
+                */
+
+                $photoPath = $uploadedFile['secure_url'];
             } catch (\Exception $e) {
 
                 return back()->with(
@@ -152,6 +166,7 @@ class ResidentProfileController extends Controller
                 );
             }
         }
+
         /*
         |--------------------------------------------------------------------------
         | GENERATE RESIDENT ID
