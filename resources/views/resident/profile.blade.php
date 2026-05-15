@@ -9,7 +9,7 @@
     </div>
 
     <div class="user-name">
-        {{ Auth::user()->name }}
+        {{ Auth::guard('resident')->user()->name }}
     </div>
 
 </div>
@@ -36,11 +36,11 @@
     @endif
 
     <h3 class="profile-name">
-        {{ Auth::user()->name }}
+        {{ Auth::guard('resident')->user()->name }}
     </h3>
 
     <p class="profile-email">
-        {{ Auth::user()->email }}
+        {{ Auth::guard('resident')->user()->email }}
     </p>
 
 </div>
