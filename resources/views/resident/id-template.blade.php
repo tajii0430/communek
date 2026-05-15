@@ -178,14 +178,6 @@
             font-size: 18px;
             font-weight: bold;
         }
-
-        .bg-watermark {
-            position: absolute;
-            right: 160px;
-            top: 180px;
-            width: 380px;
-            opacity: 0.06;
-        }
     </style>
 </head>
 
@@ -199,13 +191,19 @@
 
         <div class="gold-line"></div>
 
+        <!-- LEFT LOGO -->
+
         <img
             src="{{ public_path('images/batac-logo.png') }}"
             class="left-logo">
 
+        <!-- RIGHT LOGO -->
+
         <img
             src="{{ public_path('images/bagong-pilipinas.png') }}"
             class="right-logo">
+
+        <!-- HEADER -->
 
         <div class="header">
 
@@ -239,13 +237,35 @@
 
         <div class="photo-box">
 
-            @if($resident->profile_photo)
+            @php
+
+            $photo = $resident->profile_photo;
+
+            @endphp
+
+            @if($photo)
+
+            <!-- CLOUDINARY IMAGE -->
+
+            @if(Str::startsWith($photo, ['http://', 'https://']))
 
             <img
-                src="{{ $resident->profile_photo }}"
+                src="{{ $photo }}"
                 alt="Resident Photo">
 
             @else
+
+            <!-- LOCAL STORAGE IMAGE -->
+
+            <img
+                src="{{ public_path('storage/' . $photo) }}"
+                alt="Resident Photo">
+
+            @endif
+
+            @else
+
+            <!-- DEFAULT IMAGE -->
 
             <img
                 src="{{ public_path('images/default-avatar.png') }}"
@@ -255,7 +275,7 @@
 
         </div>
 
-        <!-- RESIDENT ID -->
+        <!-- RESIDENT ID NUMBER -->
 
         <div class="resident-id">
 
