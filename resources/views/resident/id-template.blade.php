@@ -259,7 +259,7 @@
 
             <img
                 src="{{ public_path('storage/' . $photo) }}"
-                alt="Resident Photo">
+                alt=" Paste Resident Photo Here">
 
             @endif
 
