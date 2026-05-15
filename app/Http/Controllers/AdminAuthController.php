@@ -18,7 +18,7 @@ class AdminAuthController extends Controller
 
     public function login(Request $request)
     {
-        // HARDCODED SUPER ADMIN LOGIN
+        // HARD CODED SUPER ADMIN
 
         if (
             $request->username === 'superadmin' &&
@@ -36,13 +36,9 @@ class AdminAuthController extends Controller
         // DATABASE LOGIN
 
         $credentials = [
-
             'username' => $request->username,
             'password' => $request->password
-
         ];
-
-        // LOGIN USING WORKER GUARD
 
         if (Auth::guard('worker')->attempt($credentials)) {
 
@@ -50,25 +46,17 @@ class AdminAuthController extends Controller
 
             $user = Auth::guard('worker')->user();
 
-            // SUPER ADMIN
-
             if ($user->role == 'super_admin') {
-
                 return redirect('/superadmin/dashboard');
             }
 
-            // BARANGAY WORKER
-
             if ($user->role == 'barangay_worker') {
-
                 return redirect('/barangay/dashboard');
             }
         }
 
         return back()->withErrors([
-
-            'username' => 'Invalid admin credentials'
-
+            'username' => 'Invalid username or password'
         ]);
     }
 

@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\BarangayController;
 use App\Http\Controllers\ResidentController;
@@ -25,29 +24,6 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 Route::get('/', function () {
     return redirect('/login');
 });
-/*
-|--------------------------------------------------------------------------
-| ANNOUNCEMENTS
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['auth:worker'])->group(function () {
-
-    Route::get(
-        '/barangay/announcements',
-        [AnnouncementController::class, 'index']
-    );
-
-    Route::post(
-        '/barangay/announcements',
-        [AnnouncementController::class, 'store']
-    );
-
-    Route::delete(
-        '/barangay/announcements/delete/{id}',
-        [BarangayController::class, 'deleteAnnouncement']
-    );
-});
 
 /*
 |--------------------------------------------------------------------------
@@ -67,11 +43,38 @@ Route::post(
 
 /*
 |--------------------------------------------------------------------------
+| ADMIN LOGIN
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/admin/login',
+    [AdminAuthController::class, 'loginPage']
+);
+
+Route::post(
+    '/admin/login',
+    [AdminAuthController::class, 'login']
+);
+
+Route::post(
+    '/admin/logout',
+    [AdminAuthController::class, 'logout']
+);
+
+/*
+|--------------------------------------------------------------------------
 | DASHBOARD REDIRECT
 |--------------------------------------------------------------------------
 */
 
 Route::get('/dashboard', function () {
+
+    // HARDCODED SUPER ADMIN
+
+    if (session('super_admin')) {
+        return redirect('/superadmin/dashboard');
+    }
 
     // WORKER
 
@@ -80,12 +83,10 @@ Route::get('/dashboard', function () {
         $user = Auth::guard('worker')->user();
 
         if ($user->role == 'super_admin') {
-
             return redirect('/superadmin/dashboard');
         }
 
         if ($user->role == 'barangay_worker') {
-
             return redirect('/barangay/dashboard');
         }
     }
@@ -93,30 +94,44 @@ Route::get('/dashboard', function () {
     // RESIDENT
 
     if (Auth::guard('resident')->check()) {
-
         return redirect('/resident/dashboard');
     }
 
-    return redirect('/');
+    return redirect('/login');
 });
 
+/*
+|--------------------------------------------------------------------------
+| SUPER ADMIN
+|--------------------------------------------------------------------------
+*/
 
-// HARDCODED SUPER ADMIN DASHBOARD
+Route::middleware(function ($request, $next) {
 
-Route::get('/superadmin/dashboard', function () {
+    // HARDCODED SUPER ADMIN
 
-    if (!session('super_admin')) {
-        return redirect('/admin/login');
+    if (session('super_admin')) {
+        return $next($request);
     }
 
-    return app(
-        \App\Http\Controllers\SuperAdminController::class
-    )->dashboard();
-});
+    // DATABASE SUPER ADMIN
 
-// HARDCODED SUPER ADMIN ROUTES
+    if (Auth::guard('worker')->check()) {
 
-Route::middleware([])->group(function () {
+        $user = Auth::guard('worker')->user();
+
+        if ($user->role == 'super_admin') {
+            return $next($request);
+        }
+    }
+
+    return redirect('/admin/login');
+})->group(function () {
+
+    Route::get(
+        '/superadmin/dashboard',
+        [SuperAdminController::class, 'dashboard']
+    );
 
     Route::get(
         '/superadmin/barangays',
@@ -149,7 +164,35 @@ Route::middleware([])->group(function () {
     );
 });
 
+/*
+|--------------------------------------------------------------------------
+| ANNOUNCEMENTS
+|--------------------------------------------------------------------------
+*/
 
+Route::middleware(['auth:worker'])->group(function () {
+
+    Route::get(
+        '/barangay/announcements',
+        [AnnouncementController::class, 'index']
+    );
+
+    Route::post(
+        '/barangay/announcements',
+        [AnnouncementController::class, 'store']
+    );
+
+    Route::delete(
+        '/barangay/announcements/delete/{id}',
+        [BarangayController::class, 'deleteAnnouncement']
+    );
+});
+
+/*
+|--------------------------------------------------------------------------
+| BARANGAY WORKER
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware(['auth:worker'])->group(function () {
 
@@ -412,34 +455,5 @@ Route::middleware(['auth:resident'])->group(function () {
         [ResidentProfileController::class, 'update']
     );
 });
-
-/*
-|--------------------------------------------------------------------------
-| ADMIN LOGIN
-|--------------------------------------------------------------------------
-*/
-/*
-|--------------------------------------------------------------------------
-| ADMIN LOGIN
-|--------------------------------------------------------------------------
-*/
-
-
-
-
-Route::get(
-    '/admin/login',
-    [AdminAuthController::class, 'loginPage']
-);
-
-Route::post(
-    '/admin/login',
-    [AdminAuthController::class, 'login']
-);
-
-Route::post(
-    '/admin/logout',
-    [AdminAuthController::class, 'logout']
-);
 
 require __DIR__ . '/auth.php';
