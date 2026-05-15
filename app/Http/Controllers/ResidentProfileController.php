@@ -126,13 +126,9 @@ class ResidentProfileController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $photoPath = $resident->profile_photo;
-
         if ($request->hasFile('profile_photo')) {
 
             try {
-
-                dd(env('CLOUDINARY_URL'));
 
                 $cloudinary = new Cloudinary(
                     env('CLOUDINARY_URL')
@@ -146,6 +142,8 @@ class ResidentProfileController extends Controller
                             'folder' => 'resident_photos'
                         ]
                     );
+
+                dd($uploadedFile);
 
                 $photoPath = $uploadedFile['secure_url'];
             } catch (\Exception $e) {
