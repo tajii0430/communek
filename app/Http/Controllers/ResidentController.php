@@ -2,236 +2,223 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Resident;
+use App\Models\Complaint;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Cloudinary\Cloudinary;
+use App\Models\User;
+use App\Models\Resident;
+use Illuminate\Support\Facades\Mail;
+use App\Models\Announcement;
+
+use App\Mail\ResidentApprovedMail;
+use App\Mail\ResidentRejectedMail;
 
 class ResidentController extends Controller
 {
 
-
-
     /*
     |--------------------------------------------------------------------------
-    | DOWNLOAD RESIDENT ID
+    | RESIDENT VERIFICATION PAGE
     |--------------------------------------------------------------------------
     */
 
-    public function downloadResidentID()
+    public function residentVerification()
     {
 
-        $resident = Resident::where(
-            'full_name',
-            Auth::guard('resident')->user()->name
-        )->first();
+        // PENDING
 
-        if (!$resident) {
+        $residents = User::where(
+            'role',
+            'resident'
+        )
+            ->where(
+                'status',
+                'pending'
+            )
+            ->get();
 
-            return back()->with(
-                'error',
-                'Resident not found.'
-            );
-        }
+        // APPROVED
 
-        $qrCode = 'data:image/svg+xml;base64,' . base64_encode(
+        $approvedResidents = User::where(
+            'role',
+            'resident'
+        )
+            ->where(
+                'status',
+                'active'
+            )
+            ->get();
 
-            QrCode::format('svg')
-                ->size(200)
-                ->generate(json_encode([
+        // REJECTED
 
-                    'name'           => $resident->full_name,
-                    'contact_number' => $resident->contact_number,
-                    'gender'         => $resident->gender,
-                    'birthdate'      => $resident->birthdate,
-                    'civil_status'   => $resident->civil_status,
-                    'sitio'          => $resident->address,
-                    'barangay'       => $resident->barangay,
-                    'resident_id'    => $resident->resident_id_number,
+        $rejectedResidents = User::where(
+            'role',
+            'resident'
+        )
+            ->where(
+                'status',
+                'rejected'
+            )
+            ->get();
 
-                ]))
-
+        return view(
+            'barangay.resident-verification',
+            compact(
+                'residents',
+                'approvedResidents',
+                'rejectedResidents'
+            )
         );
-
-        $pdf = Pdf::loadView('resident.id-template', [
-
-            'resident' => $resident,
-            'qrCode'   => $qrCode
-
-        ])->setPaper('A4', 'landscape');
-
-        return $pdf->download('resident-id.pdf');
     }
 
     /*
     |--------------------------------------------------------------------------
-    | UPDATE PROFILE
+    | UPDATE COMPLAINT
     |--------------------------------------------------------------------------
     */
 
-    public function update(Request $request)
+    public function updateComplaint(
+        Request $request,
+        $id
+    ) {
+
+        $complaint = Complaint::findOrFail($id);
+
+        $complaint->update([
+
+            'description' =>
+            $request->description
+
+        ]);
+
+        return back()
+            ->with(
+                'success',
+                'Complaint updated!'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | VIEW COMPLAINT
+    |--------------------------------------------------------------------------
+    */
+
+    public function viewComplaint($id)
     {
 
-        $resident = Resident::where(
-            'full_name',
-            Auth::guard('resident')->user()->name
-        )->first();
+        $complaint = Complaint::findOrFail($id);
 
-        if (!$resident) {
+        return view(
+            'resident.view-complaint',
+            compact('complaint')
+        );
+    }
 
-            return back()->with(
-                'error',
-                'Resident profile not found.'
-            );
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | EDIT COMPLAINT
+    |--------------------------------------------------------------------------
+    */
 
-        /*
-        |--------------------------------------------------------------------------
-        | VALIDATION
-        |--------------------------------------------------------------------------
-        */
+    public function editComplaint($id)
+    {
+
+        $complaint = Complaint::findOrFail($id);
+
+        return view(
+            'resident.edit-complaint',
+            compact('complaint')
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STORE COMPLAINT
+    |--------------------------------------------------------------------------
+    */
+
+    public function storeComplaint(Request $request)
+    {
 
         $request->validate([
 
-            'contact_number' => 'nullable|string|max:20',
-            'gender'         => 'nullable|string|max:20',
-            'birthdate'      => 'nullable|date',
-            'civil_status'   => 'nullable|string|max:50',
-            'address'        => 'nullable|string|max:255',
-            'profile_photo'  => 'nullable|image|mimes:jpg,jpeg,png|max:4096',
+            'category' => 'required',
+
+            'description' => 'required',
+
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
 
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | COMPUTE AGE
-        |--------------------------------------------------------------------------
-        */
+        $imagePath = null;
 
-        $age = null;
+        if ($request->hasFile('image')) {
 
-        if ($request->birthdate) {
+            $image = $request->file('image');
 
-            $birthdate = Carbon::parse(
-                $request->birthdate
+            $imageName =
+                time() . '.' .
+                $image->getClientOriginalExtension();
+
+            $image->move(
+                public_path('uploads'),
+                $imageName
             );
 
-            $age = $birthdate->age;
+            $imagePath = 'uploads/' . $imageName;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | KEEP OLD PHOTO
-        |--------------------------------------------------------------------------
-        */
+        Complaint::create([
 
-        $photoPath = $resident->profile_photo;
+            'complainant_name' =>
+            auth()->user()->name,
 
-        /*
-        |--------------------------------------------------------------------------
-        | PHOTO UPLOAD
-        |--------------------------------------------------------------------------
-        */
+            'category' =>
+            json_encode($request->category),
 
-        if ($request->hasFile('profile_photo')) {
+            'description' =>
+            $request->description,
 
-            try {
+            'barangay' =>
+            auth()->user()->barangay,
 
-                $cloudinary = new Cloudinary(
-                    env('CLOUDINARY_URL')
-                );
+            'image' =>
+            $imagePath,
 
-                $uploadedFile = $cloudinary
-                    ->uploadApi()
-                    ->upload(
-                        $request->file('profile_photo')->getRealPath(),
-                        [
-                            'folder' => 'resident_photos'
-                        ]
-                    );
+            'status' =>
+            'pending',
 
-                /*
-                |--------------------------------------------------------------------------
-                | GET CLOUDINARY SECURE URL
-                |--------------------------------------------------------------------------
-                */
+            'latitude' =>
+            $request->latitude,
 
-                $uploadedArray = $uploadedFile->getArrayCopy();
-
-                if (
-                    isset($uploadedArray['storage']) &&
-                    isset($uploadedArray['storage']['secure_url'])
-                ) {
-
-                    $photoPath =
-                        $uploadedArray['storage']['secure_url'];
-                }
-            } catch (\Exception $e) {
-
-                return back()->with(
-                    'error',
-                    'Cloudinary Upload Failed: ' . $e->getMessage()
-                );
-            }
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | GENERATE RESIDENT ID
-        |--------------------------------------------------------------------------
-        */
-
-        $residentID = 'BE-' .
-            date('Y') .
-            '-' .
-            str_pad(
-                $resident->id,
-                5,
-                '0',
-                STR_PAD_LEFT
-            );
-
-        /*
-        |--------------------------------------------------------------------------
-        | UPDATE PROFILE
-        |--------------------------------------------------------------------------
-        */
-
-        $resident->update([
-
-            'contact_number'     => $request->contact_number,
-            'age'                => $age,
-            'gender'             => $request->gender,
-            'birthdate'          => $request->birthdate,
-            'civil_status'       => $request->civil_status,
-            'address'            => $request->address,
-            'profile_photo'      => $photoPath,
-            'resident_id_number' => $residentID,
+            'longitude' =>
+            $request->longitude,
 
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | REDIRECT
-        |--------------------------------------------------------------------------
-        */
-
-        return redirect('/profile')
+        return redirect()
+            ->back()
             ->with(
                 'success',
-                'Profile updated successfully.'
+                'Complaint submitted successfully!'
             );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | COMPLAINTS PAGE
+    |--------------------------------------------------------------------------
+    */
+
     public function complaints()
     {
-        $complaints = \App\Models\Complaint::where(
+
+        $complaints = Complaint::where(
             'complainant_name',
             auth()->user()->name
-        )->latest()->get();
+        )
+            ->latest()
+            ->get();
 
         return view(
             'resident.complaints',
@@ -239,77 +226,22 @@ class ResidentController extends Controller
         );
     }
 
-    public function dashboard()
-    {
-        $resident = auth('resident')->user();
-
-        /*
-    |--------------------------------------------------------------------------
-    | ANNOUNCEMENTS
-    |--------------------------------------------------------------------------
-    */
-
-        $announcements = \App\Models\Announcement::latest()
-            ->take(5)
-            ->get();
-
-        /*
-    |--------------------------------------------------------------------------
-    | DOCUMENT REQUEST COUNT
-    |--------------------------------------------------------------------------
-    */
-
-        $documentRequests =
-            \App\Models\DocumentRequest::where(
-                'user_id',
-                $resident->id
-            )->count();
-
-        /*
-    |--------------------------------------------------------------------------
-    | ACTIVE COMPLAINTS COUNT
-    |--------------------------------------------------------------------------
-    */
-
-        $activeComplaints =
-            \App\Models\Complaint::where(
-                'complainant_name',
-                auth('resident')->user()->name
-            )
-            ->where('status', '!=', 'resolved')
-            ->count();
-
-        /*
-    |--------------------------------------------------------------------------
-    | RETURN VIEW
-    |--------------------------------------------------------------------------
-    */
-
-        return view(
-            'resident.dashboard',
-            compact(
-                'announcements',
-                'documentRequests',
-                'activeComplaints'
-            )
-        );
-    }
-
     /*
-|--------------------------------------------------------------------------
-| SHOW APPROVED RESIDENTS
-|--------------------------------------------------------------------------
-*/
+    |--------------------------------------------------------------------------
+    | SHOW APPROVED RESIDENTS
+    |--------------------------------------------------------------------------
+    */
 
     public function index(Request $request)
     {
+
         $query = Resident::query();
 
         /*
-    |--------------------------------------------------------------------------
-    | SEARCH
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | SEARCH
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->search) {
 
@@ -321,10 +253,10 @@ class ResidentController extends Controller
         }
 
         /*
-    |--------------------------------------------------------------------------
-    | GENDER FILTER
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | GENDER FILTER
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->gender) {
 
@@ -335,10 +267,10 @@ class ResidentController extends Controller
         }
 
         /*
-    |--------------------------------------------------------------------------
-    | AGE FILTER
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | AGE FILTER
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->age) {
 
@@ -349,10 +281,10 @@ class ResidentController extends Controller
         }
 
         /*
-    |--------------------------------------------------------------------------
-    | SITIO FILTER
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | SITIO FILTER
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->sitio) {
 
@@ -364,24 +296,256 @@ class ResidentController extends Controller
         }
 
         /*
-    |--------------------------------------------------------------------------
-    | GET RESIDENTS
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | GET RESIDENTS
+        |--------------------------------------------------------------------------
+        */
 
         $residents = $query
             ->latest()
             ->get();
 
         /*
-    |--------------------------------------------------------------------------
-    | RETURN VIEW
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | RETURN VIEW
+        |--------------------------------------------------------------------------
+        */
 
         return view(
             'barangay.residents',
             compact('residents')
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SHOW PENDING RESIDENTS
+    |--------------------------------------------------------------------------
+    */
+
+    public function verification()
+    {
+
+        $residents = User::where(
+            'role',
+            'resident'
+        )
+            ->where(
+                'status',
+                'pending'
+            )
+            ->latest()
+            ->get();
+
+        return view(
+            'barangay.resident-verification',
+            compact('residents')
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | APPROVE RESIDENT
+    |--------------------------------------------------------------------------
+    */
+
+    public function approve($id)
+    {
+
+        /*
+        |--------------------------------------------------------------------------
+        | FIND USER
+        |--------------------------------------------------------------------------
+        */
+
+        $user = User::find($id);
+
+        if (!$user) {
+
+            return redirect()
+                ->back()
+                ->with(
+                    'error',
+                    'User not found.'
+                );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE STATUS
+        |--------------------------------------------------------------------------
+        */
+
+        $user->status = 'active';
+
+        $user->save();
+
+        /*
+        |--------------------------------------------------------------------------
+        | SEND EMAIL
+        |--------------------------------------------------------------------------
+        */
+
+        Mail::to($user->email)
+            ->send(
+                new ResidentApprovedMail($user)
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREATE RESIDENT RECORD
+        |--------------------------------------------------------------------------
+        */
+
+        $existingResident = Resident::where(
+            'full_name',
+            $user->name
+        )->first();
+
+        if (!$existingResident) {
+
+            Resident::create([
+
+                'full_name'      => $user->name,
+                'contact_number' => $user->contact_number ?? '',
+                'age'            => $user->age ?? 0,
+                'gender'         => $user->gender ?? '',
+                'birthdate'      => $user->birthdate ?? now(),
+                'civil_status'   => $user->civil_status ?? '',
+                'address'        => $user->address ?? '',
+                'barangay'       => $user->barangay ?? '',
+
+            ]);
+        }
+
+        return redirect(
+            '/barangay/resident-verification'
+        )->with(
+            'success',
+            'Resident approved successfully.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | REJECT RESIDENT
+    |--------------------------------------------------------------------------
+    */
+
+    public function reject($id)
+    {
+
+        /*
+        |--------------------------------------------------------------------------
+        | FIND USER
+        |--------------------------------------------------------------------------
+        */
+
+        $user = User::find($id);
+
+        if (!$user) {
+
+            return redirect()
+                ->back()
+                ->with(
+                    'error',
+                    'Resident not found.'
+                );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | SEND EMAIL
+        |--------------------------------------------------------------------------
+        */
+
+        Mail::to($user->email)
+            ->send(
+                new ResidentRejectedMail($user)
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE STATUS
+        |--------------------------------------------------------------------------
+        */
+
+        $user->status = 'rejected';
+
+        $user->save();
+
+        return redirect(
+            '/barangay/resident-verification'
+        )->with(
+            'success',
+            'Resident rejected successfully.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESIDENT DASHBOARD
+    |--------------------------------------------------------------------------
+    */
+
+    public function dashboard()
+    {
+
+        $resident = auth('resident')->user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | ANNOUNCEMENTS
+        |--------------------------------------------------------------------------
+        */
+
+        $announcements = Announcement::latest()
+            ->take(5)
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | DOCUMENT REQUEST COUNT
+        |--------------------------------------------------------------------------
+        */
+
+        $documentRequests =
+            \App\Models\DocumentRequest::where(
+                'user_id',
+                $resident->id
+            )->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTIVE COMPLAINTS COUNT
+        |--------------------------------------------------------------------------
+        */
+
+        $activeComplaints =
+            Complaint::where(
+                'complainant_name',
+                auth('resident')->user()->name
+            )
+            ->where(
+                'status',
+                '!=',
+                'resolved'
+            )
+            ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | RETURN VIEW
+        |--------------------------------------------------------------------------
+        */
+
+        return view(
+            'resident.dashboard',
+            compact(
+                'announcements',
+                'documentRequests',
+                'activeComplaints'
+            )
         );
     }
 }
