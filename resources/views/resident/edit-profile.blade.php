@@ -57,26 +57,40 @@
 
         @csrf
 
-        <div class="section-title">
-            Profile Photo
-        </div>
-
         <div class="custom-file-upload">
 
-            <label for="profilePhoto" class="upload-btn">
-                Upload Photo
-            </label>
+            <img
+                id="profile-preview"
+                src="{{ $resident->profile_photo ? asset('storage/' . $resident->profile_photo) : 'https://via.placeholder.com/90' }}"
+                alt="Profile Preview"
+                style="
+            width:90px;
+            height:90px;
+            border-radius:50%;
+            object-fit:cover;
+            border:3px solid #dbe3ec;
+        ">
 
-            <span id="profile-file-name">
-                No file selected
-            </span>
+            <div>
+
+                <label for="profilePhoto" class="upload-btn">
+                    Upload Photo
+                </label>
+
+                <div id="profile-file-name"
+                    style="margin-top:10px;">
+                    No file selected
+                </div>
+
+            </div>
 
             <input
                 type="file"
                 id="profilePhoto"
                 name="profile_photo"
+                accept="image/*"
                 hidden
-                onchange="updateProfileFileName(this)">
+                onchange="updateProfilePreview(this)">
 
         </div>
 
@@ -165,7 +179,7 @@
         <input
             type="text"
             class="input"
-            value="{{ $resident->barangay }}"
+            value="{{ Auth::guard('resident')->user()->barangay }}"
             readonly>
 
         <button
@@ -181,7 +195,7 @@
 </div>
 
 <script>
-    function updateProfileFileName(input) {
+    function updateProfilePreview(input) {
 
         const fileName =
             input.files.length > 0 ?
@@ -190,6 +204,19 @@
 
         document.getElementById('profile-file-name')
             .innerText = fileName;
+
+        if (input.files && input.files[0]) {
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+
+                document.getElementById('profile-preview')
+                    .src = e.target.result;
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
     }
 </script>
 
