@@ -10,7 +10,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Cloudinary\Cloudinary;
 
-class ResidentProfileController extends Controller
+class ResidentController extends Controller
 {
 
     /*
