@@ -127,10 +127,12 @@ class ResidentProfileController extends Controller
         */
 
         $photoPath = $resident->profile_photo;
-        dd($request->hasFile('profile_photo'));
+
         if ($request->hasFile('profile_photo')) {
 
             try {
+
+                dd(env('CLOUDINARY_URL'));
 
                 $cloudinary = new Cloudinary(
                     env('CLOUDINARY_URL')
@@ -148,13 +150,9 @@ class ResidentProfileController extends Controller
                 $photoPath = $uploadedFile['secure_url'];
             } catch (\Exception $e) {
 
-                return back()->with(
-                    'error',
-                    'Cloudinary Upload Failed: ' . $e->getMessage()
-                );
+                dd($e->getMessage());
             }
         }
-
         /*
         |--------------------------------------------------------------------------
         | GENERATE RESIDENT ID
