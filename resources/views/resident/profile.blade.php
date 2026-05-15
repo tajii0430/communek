@@ -19,16 +19,19 @@
     @if($resident && $resident->profile_photo)
 
     <img
-        src="{{ asset('storage/' . $resident->profile_photo) }}"
+        src="{{ asset('storage/' . $resident->profile_photo) }}?v={{ time() }}"
         class="rounded-circle mb-3"
         width="120"
         height="120"
-        style="object-fit: cover;">
+        style="
+        object-fit: cover;
+        border-radius: 50%;
+    ">
 
     @else
 
     <img
-        src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('resident')->user()->name) }}&background=2563eb&color=fff&size=200"
+        src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('resident')->user()->name) }}"
         class="rounded-circle mb-3"
         width="120"
         height="120">

@@ -419,12 +419,10 @@ Route::middleware(['auth:resident'])->group(function () {
 
     Route::get('/profile', function () {
 
-        $resident = DB::table('residents')
-            ->where(
-                'full_name',
-                Auth::guard('resident')->user()->name
-            )
-            ->first();
+        $resident = \App\Models\Resident::where(
+            'full_name',
+            Auth::guard('resident')->user()->name
+        )->first();
 
         return view(
             'resident.profile',
