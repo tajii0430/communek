@@ -127,7 +127,7 @@ class ResidentProfileController extends Controller
         */
 
         $photoPath = $resident->profile_photo;
-
+        dd($request->hasFile('profile_photo'));
         if ($request->hasFile('profile_photo')) {
 
             try {
