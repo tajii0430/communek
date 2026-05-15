@@ -117,7 +117,7 @@ class ResidentProfileController extends Controller
                 ]
             );
 
-            $photoPath = $uploadedFile['secure_url'];
+            $photoPath = $uploadedFile['secure_url'] ?? $uploadedFile['url'];
         }
 
         /*
