@@ -105,7 +105,7 @@ Route::group([], function () {
 
             // HARDCODED SUPER ADMIN
 
-            if (session('super_admin')) {
+            if (session()->has('super_admin')) {
 
                 return app(
                     \App\Http\Controllers\SuperAdminController::class
